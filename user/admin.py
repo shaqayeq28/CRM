@@ -13,7 +13,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Lead)
 class LeadAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'priority', 'created_by','status', 'description', 'created_time', 'updated_time',
+    list_display = ['name', 'email', 'priority', 'created_by', 'status', 'description', 'created_time', 'updated_time',
                     'is_active']
     list_filter = ('priority', 'status', 'is_active')
     raw_id_fields = ('created_by',)
