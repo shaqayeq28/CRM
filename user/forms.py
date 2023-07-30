@@ -14,10 +14,10 @@ class SignUpForm(UserCreationForm):
 class AddLeadForm(forms.ModelForm):
     class Meta:
         model = Lead
-        fields = ['name', 'email', 'priority', 'status', 'description']
+        fields = ['name', 'email', 'team', 'priority', 'status', 'description']
 
 
 class AddClientForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ['name', 'email', 'description']
+        fields = ['name', 'email', 'team', 'description']

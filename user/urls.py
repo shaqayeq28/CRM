@@ -2,7 +2,8 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from user.views import (signup, dashboard, add_lead, leads_list, leads_detail, delete_leads, edit_leads,
-                        convert_lead_to_client, clients_list, clients_detail, add_client, delete_client, edit_clients)
+                        convert_lead_to_client, clients_list, clients_detail, add_client, delete_client, edit_clients,
+                        my_profile)
 
 urlpatterns = [
     path('signup/', signup, name='signup'),
@@ -20,4 +21,5 @@ urlpatterns = [
     path('dashboard/clients/add-client/', add_client, name='clients_add'),
     path('dashboard/clients/<int:pk>/delete-client/', delete_client, name='clients_delete'),
     path('dashboard/clients/<int:pk>/add-client/', edit_clients, name='clients_edit'),
+    path('dashboard/profile/', my_profile, name='my_profile'),
 ]

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 # Create your views here.
+from team.models import Team
 from user.forms import SignUpForm, AddLeadForm, AddClientForm
 from user.models import UserProfile, Lead, Client
 
@@ -15,6 +16,10 @@ def signup(request):
             user = form.save()
             user_profile = UserProfile.objects.create(user=user)
             user_profile.save()
+            #TODO: is should change!!!
+            team = Team.objects.create(name='my team', created_by=request.user)
+            team.members.add(request.user)
+            team.save()
 
             return redirect('/log-in/')
 
@@ -24,16 +29,30 @@ def signup(request):
 
 
 @login_required
+def my_profile(request):
+    team = Team.objects.filter(created_by=request.user).first()
+    return render(request, 'user/profile.html', context={'team': team})
+
+
+@login_required
 def dashboard(request):
-    return render(request, 'user/dashboard.html')
+    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
+    leads = Lead.objects.filter(team=team,
+                                created_by=request.user,
+                                converted_to_client=False).order_by('-created_time')[:5]
+    clients = Client.objects.filter(team=team, created_by=request.user).order_by('-created_time')[:5]
+
+    return render(request, 'user/dashboard.html', context={'leads': leads, 'clients': clients})
 
 
 @login_required
 def add_lead(request):
     if request.method == "POST":
+        team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
+
         form = AddLeadForm(request.POST)
         if form.is_valid():
-            lead_obj = Lead.objects.create(**form.cleaned_data, created_by=request.user)
+            lead_obj = Lead.objects.create(**form.cleaned_data, created_by=request.user, team=team)
             lead_obj.save()
             messages.success(request, "the lead created successfully")
 
@@ -111,11 +130,13 @@ def convert_lead_to_client(request, pk):
         'converted_to_client': False,
         'pk': pk
     }
+    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
     lead = get_object_or_404(Lead, **filter_kwargs)
     client = Client.objects.create(name=lead.name,
                                    email=lead.email,
                                    description=lead.description,
-                                   created_by=request.user)
+                                   created_by=request.user,
+                                   team=team, )
 
     lead.converted_to_client = True
     lead.save(update_fields=['converted_to_client'])
@@ -145,9 +166,10 @@ def clients_detail(request, pk):
 @login_required
 def add_client(request):
     if request.method == "POST":
+        team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
         form = AddClientForm(request.POST)
         if form.is_valid():
-            client_obj = Client.objects.create(**form.cleaned_data, created_by=request.user)
+            client_obj = Client.objects.create(**form.cleaned_data, created_by=request.user, team=team)
             client_obj.save()
             messages.success(request, "the client created successfully")
 
@@ -155,7 +177,6 @@ def add_client(request):
     form = AddClientForm()
 
     return render(request, 'user/clients_add.html', context={'form': form})
-
 
 
 @login_required
