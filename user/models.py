@@ -11,7 +11,7 @@ class UserProfile(BaseModel):
 
 
 class Lead(BaseModel):
-    LOW = 'LOWW'
+    LOW = 'LOW'
     MEDIUM = 'medium'
     HIGH = 'high'
 
@@ -39,6 +39,17 @@ class Lead(BaseModel):
     priority = models.CharField(verbose_name=_('priority'), max_length=150, choices=PRIORITY_CHOICES, default=MEDIUM)
     status = models.CharField(verbose_name=_('status'), max_length=150, choices=STATUS_CHOICES, default=NEW)
     description = models.TextField(verbose_name=_('description'), blank=True)
+    converted_to_client = models.BooleanField(verbose_name=_('converted to client'), default=False)
 
     def __str__(self):
         return f'{self.name} - {self.priority}'
+
+
+class Client(BaseModel):
+    name = models.CharField(verbose_name=_('name'), max_length=255)
+    email = models.EmailField(verbose_name=_('email'))
+    created_by = models.ForeignKey(User, verbose_name='created by', related_name='clients', on_delete=models.PROTECT)
+    description = models.TextField(verbose_name=_('description'), blank=True)
+
+    def __str__(self):
+        return self.name

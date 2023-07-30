@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from user.models import Lead
+from user.models import Lead, Client
 
 
 class SignUpForm(UserCreationForm):
@@ -15,3 +15,9 @@ class AddLeadForm(forms.ModelForm):
     class Meta:
         model = Lead
         fields = ['name', 'email', 'priority', 'status', 'description']
+
+
+class AddClientForm(forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = ['name', 'email', 'description']

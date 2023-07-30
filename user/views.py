@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 # Create your views here.
-from user.forms import SignUpForm, AddLeadForm
-from user.models import UserProfile, Lead
+from user.forms import SignUpForm, AddLeadForm, AddClientForm
+from user.models import UserProfile, Lead, Client
 
 
 def signup(request):
@@ -44,19 +44,36 @@ def add_lead(request):
 
 
 def leads_list(request):
-    leads = Lead.objects.filter(is_active=True, created_by=request.user)
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'converted_to_client': False
+    }
+    leads = Lead.objects.filter(**filter_kwargs)
     return render(request, 'user/leads_list.html', context={'leads': leads})
 
 
 @login_required
 def leads_detail(request, pk):
-    lead = get_object_or_404(Lead, is_active=True, created_by=request.user, pk=pk)
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'converted_to_client': False,
+        'pk': pk
+    }
+    lead = get_object_or_404(Lead, **filter_kwargs)
     return render(request, 'user/leads_detail.html', context={'lead': lead})
 
 
 @login_required
 def delete_leads(request, pk):
-    lead = get_object_or_404(Lead, is_active=True, created_by=request.user, pk=pk)
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'converted_to_client': False,
+        'pk': pk
+    }
+    lead = get_object_or_404(Lead, **filter_kwargs)
     lead.is_active = False
 
     messages.success(request, "the lead deleted successfully")
@@ -65,7 +82,13 @@ def delete_leads(request, pk):
 
 @login_required
 def edit_leads(request, pk):
-    lead = get_object_or_404(Lead, is_active=True, created_by=request.user, pk=pk)
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'converted_to_client': False,
+        'pk': pk
+    }
+    lead = get_object_or_404(Lead, **filter_kwargs)
 
     if request.method == "POST":
         form = AddLeadForm(request.POST, instance=lead)
@@ -78,3 +101,94 @@ def edit_leads(request, pk):
     form = AddLeadForm(instance=lead)
 
     return render(request, 'user/leads_edit.html', context={'form': form})
+
+
+@login_required
+def convert_lead_to_client(request, pk):
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'converted_to_client': False,
+        'pk': pk
+    }
+    lead = get_object_or_404(Lead, **filter_kwargs)
+    client = Client.objects.create(name=lead.name,
+                                   email=lead.email,
+                                   description=lead.description,
+                                   created_by=request.user)
+
+    lead.converted_to_client = True
+    lead.save(update_fields=['converted_to_client'])
+
+    messages.success(request, "the lead converted to client")
+
+    return redirect('leads_list')
+
+
+@login_required
+def clients_list(request):
+    clients = Client.objects.filter(is_active=True, created_by=request.user)
+    return render(request, 'user/clients_list.html', context={'clients': clients})
+
+
+@login_required
+def clients_detail(request, pk):
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'pk': pk
+    }
+    client = get_object_or_404(Client, **filter_kwargs)
+    return render(request, 'user/clients_detail.html', context={'client': client})
+
+
+@login_required
+def add_client(request):
+    if request.method == "POST":
+        form = AddClientForm(request.POST)
+        if form.is_valid():
+            client_obj = Client.objects.create(**form.cleaned_data, created_by=request.user)
+            client_obj.save()
+            messages.success(request, "the client created successfully")
+
+            return redirect('clients_list')
+    form = AddClientForm()
+
+    return render(request, 'user/clients_add.html', context={'form': form})
+
+
+
+@login_required
+def delete_client(request, pk):
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'pk': pk
+    }
+    client = get_object_or_404(Client, **filter_kwargs)
+    client.is_active = False
+
+    messages.success(request, "the client deleted successfully")
+    return redirect('clients_list')
+
+
+@login_required
+def edit_clients(request, pk):
+    filter_kwargs = {
+        'is_active': True,
+        'created_by': request.user,
+        'pk': pk
+    }
+    client = get_object_or_404(Client, **filter_kwargs)
+
+    if request.method == "POST":
+        form = AddClientForm(request.POST, instance=client)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "the client edited successfully")
+
+            return redirect('clients_list')
+
+    form = AddClientForm(instance=client)
+
+    return render(request, 'user/clients_edit.html', context={'form': form})
