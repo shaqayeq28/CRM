@@ -16,7 +16,7 @@ def signup(request):
             user = form.save()
             user_profile = UserProfile.objects.create(user=user)
             user_profile.save()
-            #TODO: is should change!!!
+            # TODO: is should change!!!
             team = Team.objects.create(name='my team', created_by=request.user)
             team.members.add(request.user)
             team.save()
@@ -30,7 +30,7 @@ def signup(request):
 
 @login_required
 def my_profile(request):
-    team = Team.objects.filter(created_by=request.user).first()
+    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix
     return render(request, 'user/profile.html', context={'team': team})
 
 
@@ -47,8 +47,8 @@ def dashboard(request):
 
 @login_required
 def add_lead(request):
+    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
     if request.method == "POST":
-        team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
 
         form = AddLeadForm(request.POST)
         if form.is_valid():
@@ -59,7 +59,7 @@ def add_lead(request):
             return redirect('leads_list')
     form = AddLeadForm()
 
-    return render(request, 'user/add_lead.html', context={'form': form})
+    return render(request, 'user/add_lead.html', context={'form': form, 'team': team})
 
 
 def leads_list(request):
@@ -165,8 +165,8 @@ def clients_detail(request, pk):
 
 @login_required
 def add_client(request):
+    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
     if request.method == "POST":
-        team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
         form = AddClientForm(request.POST)
         if form.is_valid():
             client_obj = Client.objects.create(**form.cleaned_data, created_by=request.user, team=team)
@@ -176,7 +176,7 @@ def add_client(request):
             return redirect('clients_list')
     form = AddClientForm()
 
-    return render(request, 'user/clients_add.html', context={'form': form})
+    return render(request, 'user/clients_add.html', context={'form': form, 'team': team})
 
 
 @login_required
