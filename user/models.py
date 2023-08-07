@@ -3,7 +3,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
-from team.models import Team
 from utils.base_model import BaseModel
 
 
@@ -34,10 +33,10 @@ class Lead(BaseModel):
         (LOST, 'LOST'),
     )
 
-    team = models.ForeignKey(Team, verbose_name=_('team'), related_name='leads', on_delete=models.PROTECT)
     name = models.CharField(verbose_name=_('name'), max_length=255)
     email = models.EmailField(verbose_name=_('email'))
-    created_by = models.ForeignKey(User, verbose_name='created by', related_name='leads', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(UserProfile, verbose_name='created by', related_name='leads',
+                                   on_delete=models.PROTECT)
     priority = models.CharField(verbose_name=_('priority'), max_length=150, choices=PRIORITY_CHOICES, default=MEDIUM)
     status = models.CharField(verbose_name=_('status'), max_length=150, choices=STATUS_CHOICES, default=NEW)
     description = models.TextField(verbose_name=_('description'), blank=True)
@@ -48,10 +47,10 @@ class Lead(BaseModel):
 
 
 class Client(BaseModel):
-    team = models.ForeignKey(Team, verbose_name=_('team'), related_name='clients', on_delete=models.PROTECT)
     name = models.CharField(verbose_name=_('name'), max_length=255)
     email = models.EmailField(verbose_name=_('email'))
-    created_by = models.ForeignKey(User, verbose_name='created by', related_name='clients', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(UserProfile, verbose_name='created by', related_name='clients',
+                                   on_delete=models.PROTECT)
     description = models.TextField(verbose_name=_('description'), blank=True)
 
     def __str__(self):

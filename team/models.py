@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from user.models import Lead, Client
 from utils.base_model import BaseModel
 
 
@@ -18,11 +19,12 @@ class TeamPlan(BaseModel):
 
 
 class Team(BaseModel):
+    lead = models.ManyToManyField(Lead, verbose_name=_('leads'), related_name='team_leads')
+    client = models.ManyToManyField(Client, verbose_name=_('clients'), related_name='team_clients')
     plan = models.ForeignKey(TeamPlan, verbose_name=_('plan'), on_delete=models.PROTECT, related_name='team_plans')
     name = models.CharField(verbose_name=_('name'), max_length=255)
-    members = models.ManyToManyField(User, verbose_name=_('members'), related_name='teams')
-    created_by = models.ForeignKey(User, verbose_name=_('created by'), related_name='creators',
-                                   on_delete=models.PROTECT)
+    created_by = models.OneToOneField(User, verbose_name=_('created by'), related_name='creator',
+                                      on_delete=models.PROTECT)
 
     def __str__(self):
         return self.name

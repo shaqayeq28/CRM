@@ -7,6 +7,7 @@ from team.models import Team
 from user.forms import SignUpForm, AddLeadForm, AddClientForm
 from user.models import UserProfile, Lead, Client
 
+#TODO: add admin field who can add leads and clients to teams
 
 def signup(request):
     if request.method == "POST":
@@ -16,10 +17,6 @@ def signup(request):
             user = form.save()
             user_profile = UserProfile.objects.create(user=user)
             user_profile.save()
-            # TODO: is should change!!!
-            team = Team.objects.create(name='my team', created_by=request.user)
-            team.members.add(request.user)
-            team.save()
 
             return redirect('/log-in/')
 
@@ -30,13 +27,13 @@ def signup(request):
 
 @login_required
 def my_profile(request):
-    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix
+    team = Team.objects.filter(created_by=request.user)
     return render(request, 'user/profile.html', context={'team': team})
 
 
 @login_required
 def dashboard(request):
-    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
+    team = Team.objects.filter(created_by=request.user)
     leads = Lead.objects.filter(team=team,
                                 created_by=request.user,
                                 converted_to_client=False).order_by('-created_time')[:5]
@@ -47,7 +44,7 @@ def dashboard(request):
 
 @login_required
 def add_lead(request):
-    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
+    team = Team.objects.filter(created_by=request.user)
     if request.method == "POST":
 
         form = AddLeadForm(request.POST)
@@ -130,7 +127,7 @@ def convert_lead_to_client(request, pk):
         'converted_to_client': False,
         'pk': pk
     }
-    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
+    team = Team.objects.filter(created_by=request.user)
     lead = get_object_or_404(Lead, **filter_kwargs)
     client = Client.objects.create(name=lead.name,
                                    email=lead.email,
@@ -165,7 +162,7 @@ def clients_detail(request, pk):
 
 @login_required
 def add_client(request):
-    team = Team.objects.filter(created_by=request.user).first()  # TODO: fix team
+    team = Team.objects.filter(created_by=request.user)
     if request.method == "POST":
         form = AddClientForm(request.POST)
         if form.is_valid():
